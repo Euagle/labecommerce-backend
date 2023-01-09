@@ -1,41 +1,94 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchase = exports.products = exports.users = void 0;
+exports.getAllPurchasesFromUserId = exports.createPurchase = exports.acessarProductsName = exports.acessarProductId = exports.acessarProducts = exports.createProduct = exports.getAllUsers = exports.createUser = exports.purchases = exports.products = exports.users = void 0;
+const types_1 = require("./types");
 exports.users = [
     {
-        id: '01',
-        email: 'euagle@gmail.com',
-        password: 'a123f'
-    }, {
-        id: '02',
-        email: 'eujoao@gmail.com',
-        password: 'aksdkl4'
+        id: "1",
+        email: "johndoe@mail.com",
+        password: "123"
+    },
+    {
+        id: "2",
+        email: "ronjoe@mail.com",
+        password: "456"
     }
 ];
 exports.products = [
     {
-        id: '01',
-        name: 'cama king',
-        price: 1.200,
-        category: 'casa'
-    }, {
-        id: '02',
-        name: 'mesa',
-        price: 1.200,
-        category: 'casa'
-    }
-];
-exports.purchase = [
+        id: "1",
+        name: "Sunscreen",
+        price: 5,
+        category: types_1.PRODUCT_CATEGORY.ACCESSORIES
+    },
     {
-        userId: '01',
-        productId: '01',
-        quantity: 2,
-        totalPrice: 2.200
-    }, {
-        userId: '02',
-        productId: '02',
-        quantity: 1,
-        totalPrice: 2.00
+        id: "2",
+        name: "Sneakers",
+        price: 15,
+        category: types_1.PRODUCT_CATEGORY.CLOTHES_AND_SHOES
     }
 ];
+exports.purchases = [
+    {
+        userId: "1",
+        productId: "1",
+        quantity: 1,
+        totalPrice: 5
+    },
+    {
+        userId: "1",
+        productId: "2",
+        quantity: 2,
+        totalPrice: 30
+    }
+];
+function createUser(id, email, password) {
+    exports.users.push({
+        id,
+        email,
+        password
+    });
+    return ("Cadastro realizado com sucesso");
+}
+exports.createUser = createUser;
+function getAllUsers() {
+    return exports.users;
+}
+exports.getAllUsers = getAllUsers;
+function createProduct(id, name, price, category) {
+    exports.products.push({
+        id,
+        name,
+        price,
+        category
+    });
+    return ("Produto criado com sucesso");
+}
+exports.createProduct = createProduct;
+function acessarProducts() {
+    return exports.products;
+}
+exports.acessarProducts = acessarProducts;
+function acessarProductId(id) {
+    return exports.products.find(product => product.id === id);
+}
+exports.acessarProductId = acessarProductId;
+function acessarProductsName(q) {
+    return exports.products.filter(product => product.name.toLowerCase().includes(q.toLowerCase()));
+}
+exports.acessarProductsName = acessarProductsName;
+function createPurchase(userId, productId, quantity, totalPrice) {
+    exports.purchases.push({
+        userId,
+        productId,
+        quantity,
+        totalPrice
+    });
+    return ("Compra realizada com sucesso");
+}
+exports.createPurchase = createPurchase;
+function getAllPurchasesFromUserId(userIdToSearch) {
+    return exports.purchases.filter(purchase => purchase.userId === userIdToSearch);
+}
+exports.getAllPurchasesFromUserId = getAllPurchasesFromUserId;
 //# sourceMappingURL=database.js.map
