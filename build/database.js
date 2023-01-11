@@ -5,13 +5,18 @@ const types_1 = require("./types");
 exports.users = [
     {
         id: "1",
-        email: "johndoe@mail.com",
+        email: "gleice@mail.com",
         password: "123"
     },
     {
         id: "2",
-        email: "ronjoe@mail.com",
-        password: "456"
+        email: "paulo@mail.com",
+        password: "a456"
+    },
+    {
+        id: "3",
+        email: "Ricardoaks@gmail.com",
+        password: "a283u"
     }
 ];
 exports.products = [
@@ -26,6 +31,12 @@ exports.products = [
         name: "Sneakers",
         price: 15,
         category: types_1.PRODUCT_CATEGORY.CLOTHES_AND_SHOES
+    },
+    {
+        id: "3",
+        name: "Mouse",
+        price: 15,
+        category: types_1.PRODUCT_CATEGORY.ACCESSORIES
     }
 ];
 exports.purchases = [
@@ -36,7 +47,7 @@ exports.purchases = [
         totalPrice: 5
     },
     {
-        userId: "1",
+        userId: "2",
         productId: "2",
         quantity: 2,
         totalPrice: 30
