@@ -23,3 +23,5 @@ export enum PRODUCT_CATEGORY {
   CLOTHES_AND_SHOES = "Roupas",
   ELECTRONICS = "Eletrônicos"
 }
+
+
