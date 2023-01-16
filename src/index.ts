@@ -264,7 +264,7 @@ app.delete("/users/:id", (req: Request, res: Response)=>{
         res.status(200).send( "Produto apagado com sucesso")
         })
 
-
+ 
         //exercicio3
         //Editar user por id
         app.put("/users/:id", (req: Request, res: Response)=>{
