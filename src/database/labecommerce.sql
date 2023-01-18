@@ -133,3 +133,33 @@ ORDER BY price asc LIMIT 20;
 SELECT * FROM products
 WHERE price >= "800" AND price <="1500"
 ORDER BY price ASC;
+
+
+--criando uma tabela purchases
+CREATE TABLE purchases(
+	id TEXT PRIMARY KEY UNIQUE NOT NULL,
+	total_price REAL UNIQUE NOT NULL, 
+	paid INTEGER NOT NULL,
+	delivered_at TEXT,
+	buyer_id TEXT NOT NULL, 
+	 FOREIGN KEY (buyer_id) REFERENCES users (id)
+ 
+);
+
+INSERT INTO purchases(id, total_price, paid, delivered_at, buyer_id)
+VALUES("001",200,0,"","a001"),
+("002",300,0,"","a002"),
+("003",400,0,"","a001"),
+("004",500,0,"","a003");
+
+SELECT * FROM purchases;
+DROP TABLE purchases;
+
+UPDATE purchases
+SET delivered_at="DATATIME 02/02/2023"
+WHERE id ="002";
+
+SELECT * FROM purchases
+INNER JOIN users
+ON purchases.buyer_id =users.id
+WHERE users.id="a001";
