@@ -156,10 +156,45 @@ SELECT * FROM purchases;
 DROP TABLE purchases;
 
 UPDATE purchases
-SET delivered_at="DATATIME 02/02/2023"
+SET delivered_at=DATETIME("now", "localtime")
 WHERE id ="002";
 
 SELECT * FROM purchases
 INNER JOIN users
 ON purchases.buyer_id =users.id
 WHERE users.id="a001";
+
+CREATE TABLE purchases_products (
+	purchase_id TEXT NOT NULL, 
+	product_id TEXT NOT NULL, 
+	quantity INTEGER NOT NULL,
+	FOREIGN KEY (purchase_id) REFERENCES purchases(id)
+	FOREIGN KEY (product_id) REFERENCES products(id)
+
+
+);
+INSERT INTO purchases_products(purchase_id, product_id, quantity)
+VALUES
+("001", "a03", 1),
+("002", "a03", 2),
+("003", "a03", 3);
+DROP TABLE purchases_products;
+
+SELECT * FROM purchases
+INNER JOIN  purchases_products  
+ON  purchases_products.purchase_id =purchases.id
+;
+SELECT 
+purchases.id AS purchaseId,
+purchases.total_price, 
+purchases.paid,
+purchases.delivered_at, 
+purchases.buyer_id AS buyerId,
+products.id, 
+products.name,
+products.price
+FROM purchases
+LEFT JOIN purchases_products
+ON purchases_products.purchase_id = purchases.id
+INNER JOIN products
+ON  purchases_products.product_id = products.id;
