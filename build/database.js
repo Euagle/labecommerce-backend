@@ -6,7 +6,7 @@ exports.users = [
     {
         id: "1",
         email: "gleice@mail.com",
-        password: "123"
+        password: "a123"
     },
     {
         id: "2",
@@ -22,20 +22,20 @@ exports.users = [
 exports.products = [
     {
         id: "1",
-        name: "Sunscreen",
-        price: 5,
+        name: "Teclado",
+        price: 7,
         category: types_1.PRODUCT_CATEGORY.ACCESSORIES
     },
     {
         id: "2",
-        name: "Sneakers",
-        price: 15,
-        category: types_1.PRODUCT_CATEGORY.CLOTHES_AND_SHOES
+        name: "Fone",
+        price: 1,
+        category: types_1.PRODUCT_CATEGORY.ACCESSORIES
     },
     {
         id: "3",
         name: "Mouse",
-        price: 15,
+        price: 5,
         category: types_1.PRODUCT_CATEGORY.ACCESSORIES
     }
 ];
