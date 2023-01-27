@@ -153,7 +153,11 @@ INSERT INTO purchases(id, total_price, paid, buyer_id)
 VALUES("001",200,0,"a001"),
 ("002",300,0,"a002"),
 ("003",400,0,"a001"),
-("004",500,0,"a003");
+("004",500,0,"a003"),
+("005",700,0,"a003");
+
+
+
 
 SELECT * FROM purchases;
 DROP TABLE purchases;

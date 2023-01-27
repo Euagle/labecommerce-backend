@@ -344,11 +344,11 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
       throw new Error("Compra não encontrada");
     }
 
-    const [user] = await db("users").where({ id: result.buyer_id });
-    result["name"] = user.name;
-    result["email"] = user.email;
+    // const [user] = await db("users").where({ id: result.buyer_id });
+    // result["name"] = user.name;
+    // result["email"] = user.email;
 
-    res.status(200).send(result);
+    // res.status(200).send(result);
   } catch (error: any) {
     console.log(error);
     if (res.statusCode === 200) {
@@ -420,6 +420,32 @@ app.delete("/users/:id", (req: Request, res: Response)=>{
         }
         res.status(200).send( "Produto apagado com sucesso")
         })
+
+
+        //Delete purchase por id usando o query builder
+        app.delete("/purchases/:id", async (req: Request, res: Response) => {
+
+          try {    
+          const idPurchase = req.params.id
+          const purchase = await db("purchases") .where({id:idPurchase})
+      
+          if(purchase){
+              await db("purchases").del().where({id:idPurchase})
+              res.status(200).send("Pedido cancelado  com sucesso")
+
+          }else{
+              res.status(400)
+              throw new Error("Pedido não encontrado")
+          }
+      
+          }catch (error: any) {
+              console.log(error)
+              if (res.statusCode === 200) {
+                  res.status(500)
+              }
+              res.send(error.message)
+          }
+      })
 
  
         //exercicio3

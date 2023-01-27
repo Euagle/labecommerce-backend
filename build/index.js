@@ -192,10 +192,6 @@ app.get("/purchases/:id", (req, res) => __awaiter(void 0, void 0, void 0, functi
             res.status(404);
             throw new Error("Compra não encontrada");
         }
-        const [user] = yield (0, knex_1.db)("users").where({ id: result.buyer_id });
-        result["name"] = user.name;
-        result["email"] = user.email;
-        res.status(200).send(result);
     }
     catch (error) {
         console.log(error);
@@ -253,6 +249,27 @@ app.delete("/products/:id", (req, res) => {
     }
     res.status(200).send("Produto apagado com sucesso");
 });
+app.delete("/purchase/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const idPurchase = req.params.id;
+        const purchase = yield (0, knex_1.db)("purchases").where({ id: idPurchase });
+        if (purchase) {
+            yield (0, knex_1.db)("purchases").del().where({ id: idPurchase });
+        }
+        else {
+            res.status(400);
+            throw new Error("Pedido não encontrado");
+        }
+        res.status(200).send("Pedido cancelado  com sucesso");
+    }
+    catch (error) {
+        console.log(error);
+        if (res.statusCode === 200) {
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+}));
 app.put("/users/:id", (req, res) => {
     const id = req.params.id;
     const newId = req.body.id;
