@@ -29,10 +29,7 @@ app.get("/product/search", (req, res) => __awaiter(void 0, void 0, void 0, funct
             res.status(400);
             throw new Error("query params deve possuir pelo menos um caractere");
         }
-        const [product] = yield knex_1.db.raw(`
-     SELECT * FROM products
-     WERE LOWER(name) LIKE("%${q}%")
-     `);
+        const [product] = yield (0, knex_1.db)("products").where({ name: q });
         res.status(200).send({ product: product });
     }
     catch (error) {
@@ -58,14 +55,15 @@ app.post("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400);
             throw new Error("'password' inválido, deve ser uma string");
         }
-        if (id.length < 1 || email.length < 1) {
+        if (id.length < 1 || email.length < 1 || password.length < 2) {
             res.status(400);
             throw new Error("'id' ou 'email' devem ter no minímo 1 caractere");
         }
-        yield knex_1.db.raw(`
-      INSERT INTO users(id, email, password)
-      VALUES("${id}", "${email}", ${password});`);
-        res.status(200).send(`usuário cadastrada com sucesso`);
+        yield knex_1.db.insert({
+            id: id,
+            email: email,
+            password: password
+        }).into("users");
     }
     catch (error) {
         console.log(error);
@@ -111,7 +109,7 @@ app.post("/users", (req, res) => {
         res.send(error.message);
     }
 });
-app.post("/products", (req, res) => {
+app.post("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.body.id;
         const name = req.body.name;
@@ -128,6 +126,9 @@ app.post("/products", (req, res) => {
             price,
             category,
         };
+        yield knex_1.db.raw(`
+      INSERT INTO products(id, name, price, category)
+      VALUES("${id}", "${name}", "${price}", " "${category}"");`);
         database_1.products.push(newProduct);
         res.status(201).send("Produto criado com sucesso 😎");
     }
@@ -138,48 +139,42 @@ app.post("/products", (req, res) => {
         }
         res.send(error.message);
     }
-});
-app.post("/purchase", (req, res) => {
+}));
+app.post("/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const userId = req.body.userId;
-        const productId = req.body.productId;
-        const quantity = req.body.quantity;
-        const totalPrice = req.body.totalPrice;
-        const newPurchase = { userId, productId, quantity, totalPrice };
-        database_1.purchases.push(newPurchase);
-        res.status(201).send("Compra realizada com sucesso");
-    }
-    catch (error) {
-    }
-});
-app.post("/purchases", (req, res) => {
-    try {
-        const userId = req.body.userId;
-        const productId = req.body.productId;
-        const quantity = req.body.quantity;
-        const totalPrice = req.body.totalPrice;
-        const findIdUser = database_1.purchases.find((purchase) => purchase.userId === userId);
-        if (!findIdUser) {
+        const { id, total_price, paid, delivered_at, buyer_id } = req.body;
+        if (typeof id != "string") {
             res.status(400);
-            throw new Error("ID do usuario não existe");
+            throw new Error("'id' invalido, deve ser uma string");
         }
-        const findIdProduct = database_1.products.find((product) => product.id === productId);
-        if (!findIdProduct) {
+        if (typeof delivered_at != "string") {
             res.status(400);
-            throw new Error("ID do produto não existe");
+            throw new Error("'delivered_at' invalido, deve ser uma string");
         }
-        if (findIdProduct.price * quantity !== totalPrice) {
+        if (typeof buyer_id != "string") {
             res.status(400);
-            throw new Error("Total incorreto");
+            throw new Error("'buyer_id' invalido, deve ser uma string");
         }
-        const newPurchase = {
-            userId,
-            productId,
-            quantity,
-            totalPrice,
-        };
-        database_1.purchases.push(newPurchase);
-        res.status(201).send("Compra efetuada com sucesso 😎");
+        if (typeof total_price != "number") {
+            res.status(400);
+            throw new Error("'total_price' invalido, deve ser um number");
+        }
+        if (paid > 1 && paid < 0) {
+            res.status(400);
+            throw new Error("'paid' invalido, deve ser 0 ou 1");
+        }
+        if (id.length < 1 ||
+            paid.length < 1 ||
+            delivered_at.length < 1 ||
+            buyer_id.length < 1) {
+            res.status(400);
+            throw new Error("As informações devem ter no minimo 1 caractere");
+        }
+        yield knex_1.db.raw(`
+      INSERT INTO purchases (id, total_price, paid, delivered_at, buyer_id)
+      VALUES ("${id}", "${total_price}", "${paid}", "${delivered_at}", "${buyer_id}")
+    `);
+        res.status(200).send(`Compra cadastrada com sucesso`);
     }
     catch (error) {
         console.log(error);
@@ -188,7 +183,50 @@ app.post("/purchases", (req, res) => {
         }
         res.send(error.message);
     }
-});
+}));
+app.get("/purchases/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = req.params.id;
+        const [result] = yield (0, knex_1.db)("purchases").where({ id: id });
+        if (!result) {
+            res.status(404);
+            throw new Error("Compra não encontrada");
+        }
+        const [user] = yield (0, knex_1.db)("users").where({ id: result.buyer_id });
+        result["name"] = user.name;
+        result["email"] = user.email;
+        res.status(200).send(result);
+    }
+    catch (error) {
+        console.log(error);
+        if (res.statusCode === 200) {
+            res.status(500);
+        }
+        if (error instanceof Error) {
+            res.send(error.message);
+        }
+        else {
+            res.send("Erro inesperado");
+        }
+    }
+}));
+app.get("/users/:id/purchases", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = req.params.id;
+        const purchases = yield knex_1.db.raw(`
+        SELECT * FROM purchases
+        WHERE buyer_id = "${id}"
+      ;`);
+        res.status(200).send({ purchases: purchases });
+    }
+    catch (error) {
+        console.log(error);
+        if (res.statusCode === 200) {
+            res.status(500);
+        }
+        res.send(error.message);
+    }
+}));
 app.get("/products/:id", (req, res) => {
     const id = req.params.id;
     const result = database_1.products.find((product) => product.id === id);
@@ -245,8 +283,7 @@ app.put("/product/:id", (req, res) => {
 });
 app.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield knex_1.db.raw(`
-      SELECT * FROM users;`);
+        const result = yield (0, knex_1.db)("users");
         res.status(200).send({ users: result });
     }
     catch (error) {
@@ -264,8 +301,7 @@ app.get("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 }));
 app.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield knex_1.db.raw(`
-      SELECT * FROM products;`);
+        const result = yield (0, knex_1.db)("products");
         res.status(200).send({ products: result });
     }
     catch (error) {
@@ -279,6 +315,26 @@ app.get("/products", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else {
             res.send("Erro inesperado");
         }
+    }
+}));
+app.get("/products/search", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const nameProduct = req.query.name;
+    try {
+        if (nameProduct !== undefined) {
+            if (nameProduct.length < 1) {
+                res.status(400);
+                throw new Error("Insira ao menos 1 caracter");
+            }
+        }
+        const [product] = yield (0, knex_1.db)("products").where({ name: nameProduct });
+        res.status(200).send({ products: product });
+    }
+    catch (error) {
+        console.log(error);
+        if (res.statusCode === 200) {
+            res.status(500);
+        }
+        res.send(error.message);
     }
 }));
 //# sourceMappingURL=index.js.map

@@ -8,7 +8,7 @@ const knex_1 = __importDefault(require("knex"));
 exports.db = (0, knex_1.default)({
     client: "sqlite3",
     connection: {
-        filename: "./src/database/labecommerce.db",
+        filename: "./src/database/labecomerce.db",
     },
     useNullAsDefault: true,
     pool: {
