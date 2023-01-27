@@ -1,21 +1,23 @@
--- Active: 1673958593779@@127.0.0.1@3306
+-- Active: 1674782620473@@127.0.0.1@3306
 
 --Criando tabela de users
 CREATE TABLE users (
 	id TEXT PRIMARY KEY UNIQUE NOT NULL,
+	name TEXT NOT NULL,
 	email TEXT UNIQUE NOT NULL,
 	password TEXT NOT NULL
 );
 
+DROP TABLE users;
 --Populando tabela de users
-INSERT INTO users(id, email, password)
-VALUES("a001", "João@gmail.com", "maria123");
+INSERT INTO users(id, name, email, password)
+VALUES("a001", "Joao", "João@gmail.com", "maria123");
 
-INSERT INTO users(id, email, password)
-VALUES("a002", "Gleice@gmail.com", "Gleice123");
+INSERT INTO users(id, name, email, password)
+VALUES("a002", "Gleice", "Gleice@gmail.com", "Gleice123");
 
-INSERT INTO users(id, email, password)
-VALUES("a003", "Pedro@gmail.com", "Pedro123");
+INSERT INTO users(id, name, email, password)
+VALUES("a003","Pedro", "Pedro@gmail.com", "Pedro123");
 
 
 --verificar como está a tabela
@@ -23,6 +25,7 @@ VALUES("a003", "Pedro@gmail.com", "Pedro123");
 
 --excluir tabela
 DROP TABLE users;
+DROP TABLE products;
 
 
 --Tabela de produtos
@@ -31,7 +34,7 @@ CREATE TABLE products (
 id TEXT PRIMARY KEY UNIQUE NOT NULL,
 	name TEXT  NOT NULL,
 	price REAL NOT NULL,
-    category TEXT NOT NULL
+    category TEXT NOT NULL,
  );
 
 --Populando a tabela de produtos
@@ -52,8 +55,7 @@ VALUES("a05", "cama box de casal", 1200, "casa");
 
 --Verificando a tabela
 SELECT *  from products;
-
---editando um item da tabela que fiz repetido
+--editando um item da tabela que fiz repetdo
 UPDATE products 
 SET name = "Guarda roupa", price =100
 WHERE id = "a02";
@@ -61,7 +63,7 @@ WHERE id = "a02";
 --editando valor do item da tabela
 UPDATE products
 SET price = 1530.99
-WHERE id = "a02"
+WHERE id = "a02";
 
 
 --exercicio da tarde
@@ -140,17 +142,22 @@ CREATE TABLE purchases(
 	id TEXT PRIMARY KEY UNIQUE NOT NULL,
 	total_price REAL UNIQUE NOT NULL, 
 	paid INTEGER NOT NULL,
-	delivered_at TEXT,
+	delivered_at TEXT DEFAULT  (DATETIME('now', 'localtime')) NOT NULL ,
 	buyer_id TEXT NOT NULL, 
 	 FOREIGN KEY (buyer_id) REFERENCES users (id)
  
 );
+DROP TABLE purchases;
 
-INSERT INTO purchases(id, total_price, paid, delivered_at, buyer_id)
-VALUES("001",200,0,"","a001"),
-("002",300,0,"","a002"),
-("003",400,0,"","a001"),
-("004",500,0,"","a003");
+INSERT INTO purchases(id, total_price, paid, buyer_id)
+VALUES("001",200,0,"a001"),
+("002",300,0,"a002"),
+("003",400,0,"a001"),
+("004",500,0,"a003"),
+("005",700,0,"a003");
+
+
+
 
 SELECT * FROM purchases;
 DROP TABLE purchases;

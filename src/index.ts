@@ -64,10 +64,16 @@ app.get("/product/search", async (req: Request, res: Response) => {
         throw new Error("query params deve possuir pelo menos um caractere");
       }
   
-     const [product]= await db.raw(`
-     SELECT * FROM products
-     WERE LOWER(name) LIKE("%${q}%")
-     `)
+
+      //Antes era assim:
+    //  const [product]= await db.raw(`
+    //  SELECT * FROM products
+    //  WERE LOWER(name) LIKE("%${q}%")
+    //  `)
+
+    //Agora assim:
+     const [product]= await db("products").where({name:q})
+
       res.status(200).send({product: product});
     } catch (error: any) {
       console.log(error);
@@ -110,10 +116,17 @@ app.post("/users", async(req: Request, res: Response)=>{
           throw new Error("'id' ou 'email' devem ter no minímo 1 caractere");
           
       }
-      await db.raw(`
-      INSERT INTO users(id, email, password)
-      VALUES("${id}", "${email}", ${password});`)
-      res.status(200).send(`usuário cadastrada com sucesso`)
+      await db.insert({
+        id: id,
+        email: email,
+        password: password
+      }).into("users")
+         
+      //Alteração 01 - trocando raw por query build
+      // await db.raw(`
+      // INSERT INTO users(id, email, password)
+      // VALUES("${id}", "${email}", ${password});`)
+      // res.status(200).send(`usuário cadastrada com sucesso`)
   }catch (error) {
       console.log(error)
 
@@ -270,33 +283,84 @@ app.post("/purchases", async (req: Request, res: Response) => {
 });
 
   //exercicio1
-  //fazendo o cod com o uso do async e await r db
+  //fazendo o cod com o uso do async e await r db -- antes
 
-  app.get("/products/:id", async (req: Request, res: Response) => {
-    try {
-      const id = req.params.id;
+  // app.get("/products/:id", async (req: Request, res: Response) => {
+  //   try {
+  //     const id = req.params.id;
   
-      const [product] = await db.raw(`
-        SELECT * FROM products
-        WHERE id = "${id}"
-      `);
+  //     const [product] = await db.raw(`
+  //       SELECT * FROM products
+  //       WHERE id = "${id}"
+  //     `);
+
   
-      if (!product) {
-        res.status(400);
-        throw new Error("Produto não encontrado");
-      }
+  //     if (!product) {
+  //       res.status(400);
+  //       throw new Error("Produto não encontrado");
+  //     }
   
-      res.status(200).send({ product: product });
-    } catch (error: any) {
-      console.log(error);
+  //     res.status(200).send({ product: product });
+  //   } catch (error: any) {
+  //     console.log(error);
   
-      if (res.statusCode === 200) {
-        res.status(500);
-      }
+  //     if (res.statusCode === 200) {
+  //       res.status(500);
+  //     }
   
-      res.send(error.message);
+  //     res.send(error.message);
+  //   }
+  // });
+    
+// REFATORADO COM QUERY BUILDER -- depois
+// app.get("/purchases/:id", async(req: Request, res: Response) => {
+
+//     try {
+//         const idPurchase = req.params.id
+
+//         const [purchase]= await db("purchases").where({id:idPurchase})
+    
+//     res.status(200).send({purchases:purchase})
+        
+//     } catch (error: any) {
+//       console.log(error);
+  
+//       if (res.statusCode === 200) {
+//         res.status(500);
+//       }
+  
+//       res.send(error.message);
+//     }
+//   });
+
+
+app.get("/purchases/:id", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const [result] = await db("purchases").where({ id: id });
+
+    if (!result) {
+      res.status(404);
+      throw new Error("Compra não encontrada");
     }
-  });
+
+    // const [user] = await db("users").where({ id: result.buyer_id });
+    // result["name"] = user.name;
+    // result["email"] = user.email;
+
+    // res.status(200).send(result);
+  } catch (error: any) {
+    console.log(error);
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado");
+    }
+  }
+});
   
   app.get("/users/:id/purchases", async (req: Request, res: Response) => {
     try {
@@ -305,7 +369,7 @@ app.post("/purchases", async (req: Request, res: Response) => {
       const purchases = await db.raw(`
         SELECT * FROM purchases
         WHERE buyer_id = "${id}"
-      `);
+      ;`)
   
       res.status(200).send({ purchases: purchases });
     } catch (error: any) {
@@ -356,6 +420,32 @@ app.delete("/users/:id", (req: Request, res: Response)=>{
         }
         res.status(200).send( "Produto apagado com sucesso")
         })
+
+
+        //Delete purchase por id usando o query builder
+        app.delete("/purchases/:id", async (req: Request, res: Response) => {
+
+          try {    
+          const idPurchase = req.params.id
+          const purchase = await db("purchases") .where({id:idPurchase})
+      
+          if(purchase){
+              await db("purchases").del().where({id:idPurchase})
+              res.status(200).send("Pedido cancelado  com sucesso")
+
+          }else{
+              res.status(400)
+              throw new Error("Pedido não encontrado")
+          }
+      
+          }catch (error: any) {
+              console.log(error)
+              if (res.statusCode === 200) {
+                  res.status(500)
+              }
+              res.send(error.message)
+          }
+      })
 
  
         //exercicio3
@@ -415,11 +505,21 @@ app.delete("/users/:id", (req: Request, res: Response)=>{
 
 //users
         
+  
+// REFATORADO COM QUERY BUILDER
 app.get("/users", async (req: Request, res: Response) => {
+
   try {
-      const result = await db.raw(`
-      SELECT * FROM users;`)
-res.status(200).send({users: result})
+    //antes estava assim:
+  //     const result = await db.raw(`
+  //     SELECT * FROM users;
+  // `)
+
+
+  //Agora é feito assim
+  const result = await db("users")
+  res.status(200).send({ users: result })
+
   } catch (error) {
       console.log(error)
 
@@ -435,13 +535,17 @@ res.status(200).send({users: result})
   }
 })
 
+//REFATORADO COM QUERY BUILDER
+app.get("/products", async(req: Request, res: Response) => {
 
-//products
-app.get("/products", async (req: Request, res: Response) => {
   try {
-      const result = await db.raw(`
-      SELECT * FROM products;`)
-res.status(200).send({products: result})
+    //antes era assim:
+  //     const result = await db.raw(`
+  //     SELECT * FROM products;
+  // `)
+  
+  const result = await db("products")
+  res.status(200).send({ products: result })
   } catch (error) {
       console.log(error)
 
@@ -454,5 +558,34 @@ res.status(200).send({products: result})
       } else {
           res.send("Erro inesperado")
       }
+  }
+
+})
+
+// REFATORADO QUERY BUILDER
+app.get("/products/search", async (req: Request, res: Response) => {
+  const nameProduct = req.query.name as string
+  try {
+       if (nameProduct !== undefined) {
+          if (nameProduct.length < 1) {
+              res.status(400)
+              throw new Error("Insira ao menos 1 caracter")
+          }
+      }
+      //antes era assim:
+      // const [product] = await db.raw(`
+      //     SELECT * FROM products
+      //     WHERE name = "${q}" ;
+      // `);
+
+      const [product]= await db("products").where({name:nameProduct})
+
+      res.status(200).send({products: product})
+  } catch (error: any) {
+      console.log(error)
+      if (res.statusCode === 200) {
+          res.status(500)
+      }
+      res.send(error.message)
   }
 })
